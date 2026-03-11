@@ -27,11 +27,16 @@ from bot.handlers import (
 from bot.middlewares import DatabaseMiddleware, LoggingMiddleware
 from bot.notifications import setup_scheduler
 
+# Create logs directory if it doesn't exist
+logs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'logs')
+os.makedirs(logs_dir, exist_ok=True)
+log_file_path = os.path.join(logs_dir, 'bot.log')
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('bottega_hub/logs/bot.log', encoding='utf-8'),
+        logging.FileHandler(log_file_path, encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
