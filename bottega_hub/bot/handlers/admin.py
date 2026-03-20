@@ -274,11 +274,16 @@ async def cmd_add_visit(message: Message, db):
     )
 
     # Update user visits count using add_visit method
+    # Это увеличивает visits_count на 1 и запускает цикл если это первый визит
     user_repo.add_visit(user, amount)
-    
-    # Refresh user data from DB
+
+    # Refresh user data from DB to get updated visits_count
     updated_user = user_repo.get_by_telegram_id(str(user.telegram_id))
     new_visits_count = updated_user.visits_count
+
+    # Check if this is the first visit - cycle should be started
+    if new_visits_count == 1:
+        logger.info(f"Cycle started for user {updated_user.telegram_id}")
 
     # Check if cycle completed (9 visits reached)
     from bot.handlers.reward import generate_reward_code
@@ -312,12 +317,20 @@ async def cmd_add_visit(message: Message, db):
             logger.error(f"Failed to notify user about reward: {e}")
 
     remaining = max(0, 9 - new_visits_count)
-    
+
+    # Информация о цикле
+    cycle_info = ""
+    if new_visits_count == 1:
+        cycle_info = "\n🔄 Цикл запущен!"
+    elif updated_user.cycle_start_date:
+        days_passed = (datetime.now() - updated_user.cycle_start_date).days
+        cycle_info = f"\n🔄 Цикл: {days_passed} дн. назад"
+
     await message.answer(
         f"✅ Визит добавлен!\n\n"
         f"Пользователь: {updated_user.first_name} {updated_user.last_name or ''}\n"
         f"Телефон: {updated_user.phone}\n"
         f"Сумма чека: {amount} ₽\n"
         f"Всего визитов: {new_visits_count}\n"
-        f"До награды осталось: {remaining}"
+        f"До награды осталось: {remaining}{cycle_info}"
     )
