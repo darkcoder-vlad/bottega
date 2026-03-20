@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -81,24 +82,35 @@ class UserRepository:
         return user
 
     def get_stats(self) -> dict:
-        total_users = self.db.query(func.count(User.id)).scalar()
-        active_users = self.db.query(func.count(User.id)).filter(
-            User.is_active == True,
-            User.cycle_start_date != None
-        ).scalar()
-        rewards_issued = self.db.query(func.count(User.id)).filter(
-            User.reward_available == True
-        ).scalar()
-        completed_cycles = self.db.query(func.count(User.id)).filter(
-            User.current_cycle > 1
-        ).scalar()
-        
-        return {
-            'total_users': total_users,
-            'active_users': active_users,
-            'rewards_issued': rewards_issued,
-            'completed_cycles': completed_cycles
-        }
+        """Get database statistics"""
+        try:
+            total_users = self.db.query(func.count(User.id)).scalar() or 0
+            active_users = self.db.query(func.count(User.id)).filter(
+                User.is_active == True,
+                User.cycle_start_date != None
+            ).scalar() or 0
+            rewards_issued = self.db.query(func.count(User.id)).filter(
+                User.reward_available == True
+            ).scalar() or 0
+            completed_cycles = self.db.query(func.count(User.id)).filter(
+                User.visits_count >= 9
+            ).scalar() or 0
+
+            return {
+                'total_users': total_users,
+                'active_users': active_users,
+                'rewards_issued': rewards_issued,
+                'completed_cycles': completed_cycles
+            }
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error getting stats: {e}")
+            return {
+                'total_users': 0,
+                'active_users': 0,
+                'rewards_issued': 0,
+                'completed_cycles': 0
+            }
 
 
 class VisitRepository:
