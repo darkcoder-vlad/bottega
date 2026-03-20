@@ -49,3 +49,8 @@ Thumbs.db
 # Project specific
 bottega_hub/data/*.db
 bottega_hub/logs/*.log
+
+# Backups (keep local only)
+bottega_hub/backups/
+backups/
+*.db.backup

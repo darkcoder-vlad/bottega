@@ -1,10 +1,20 @@
 from aiogram import Router, F
 from aiogram.types import Message
+import random
+import string
 from database.repositories import UserRepository, RewardRepository
 from bot.keyboards.main_menu import get_main_keyboard
 from config import VISITS_REQUIRED, MAX_REWARD_AMOUNT
 
 router = Router()
+
+
+def generate_reward_code() -> str:
+    """Generate unique reward code in format BTG-XXXX-XX"""
+    chars = string.ascii_uppercase + string.digits
+    part1 = ''.join(random.choices(chars, k=4))
+    part2 = ''.join(random.choices(chars, k=2))
+    return f"BTG-{part1}-{part2}"
 
 
 @router.message(F.text == "🎁 Моя награда")

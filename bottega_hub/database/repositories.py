@@ -105,12 +105,13 @@ class VisitRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def create(self, user_id: int, amount: float, shift_code: str) -> Visit:
+    def create(self, user_id: int, check_amount: float, status: str = 'pending', shift_code: str = None) -> Visit:
         visit = Visit(
             user_id=user_id,
-            amount=amount,
-            shift_code=shift_code,
-            visit_date=datetime.utcnow()
+            amount=check_amount,
+            shift_code=shift_code or 'ADMIN',
+            visit_date=datetime.utcnow(),
+            is_valid=(status == 'approved')
         )
         self.db.add(visit)
         self.db.commit()
@@ -134,10 +135,11 @@ class RewardRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def create(self, user_id: int, reward_code: str) -> Reward:
+    def create(self, user_id: int, reward_code: str, amount: float = None) -> Reward:
         reward = Reward(
             user_id=user_id,
-            reward_code=reward_code
+            reward_code=reward_code,
+            amount=amount
         )
         self.db.add(reward)
         self.db.commit()
